@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# venvs
+.venv/
+venv/
+.env
+
+# reports / local run artifacts (regenerate with `agent-trace run`)
+report.json
+traces/
+*.jsonl
+
+# secrets — never commit keys
+.env.local
+.env.*.local
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

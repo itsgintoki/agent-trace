@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent Trace — evaluation atelier</title>
+<style>
+  :root {
+    --paper: #e9e3d6;
+    --paper-2: #f2ede2;
+    --card: #f5f1e8;
+    --ink: #1b1814;
+    --muted: #7c7567;
+    --line: #d8d0bf;
+    --pill: #1b1814;
+    --accent: #b3541e;
+    --red-bg: #f3d9d2;
+    --red-ink: #8c2f1b;
+    --green: #2e7d4f;
+    --red: #b3362a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: Georgia, "Times New Roman", "Playfair Display", serif; }
+  .italic { font-style: italic; font-weight: 400; }
+  a { color: inherit; }
+
+  /* top nav like reference */
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 28px; font-size: 12px; letter-spacing: .14em;
+  }
+  .brand { font-weight: 700; letter-spacing: .18em; }
+  .topbar .spacer { flex: 1; }
+  .pill {
+    background: var(--pill); color: #f4f0e8; border: 0; border-radius: 999px;
+    padding: 7px 16px; font-size: 11px; letter-spacing: .14em; cursor: pointer;
+  }
+  .pill.ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+  .pill:disabled { opacity: .45; cursor: wait; }
+  .health { font-size: 11px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+
+  .wrap { padding: 0 28px 40px; max-width: 1240px; margin: 0 auto; }
+
+  /* hero */
+  .hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; margin-top: 6px; }
+  .hero-img {
+    position: relative; border-radius: 4px; overflow: hidden; min-height: 340px;
+    background:
+      linear-gradient(180deg, rgba(20,16,12,.05), rgba(20,16,12,.42)),
+      linear-gradient(100deg, #b8a88f 0%, #cbbba1 22%, #8d7c64 45%, #d9cdb6 62%, #6f6250 82%, #a89880 100%);
+  }
+  .hero-img::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, transparent 46%, rgba(30,25,18,.55) 47%, rgba(30,25,18,.55) 63%, transparent 64%),
+      linear-gradient(0deg, transparent 55%, rgba(255,255,255,.14) 56%, transparent 57%);
+  }
+  .hero-img::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(120% 90% at 20% 10%, transparent 55%, rgba(25,20,14,.35) 100%);
+  }
+  .hero-copy { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #faf7f0; z-index: 2; padding: 24px; }
+  .hero-copy h1 { margin: 0; font-size: clamp(34px, 4.6vw, 58px); line-height: .95; letter-spacing: .01em; font-weight: 600; text-transform: uppercase; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
+  .hero-copy h1 .italic { text-transform: none; }
+  .hero-tag { margin-top: 14px; font-size: 11px; letter-spacing: .3em; opacity: .85; }
+  .hero-meta { position: absolute; bottom: 12px; right: 12px; z-index: 2; display: flex; gap: 8px; }
+  .chip { background: rgba(250,247,240,.92); color: var(--ink); font-size: 10px; letter-spacing: .14em; padding: 6px 10px; border-radius: 4px; }
+
+  .hero-side { display: flex; flex-direction: column; gap: 18px; }
+  .quote {
+    background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+    padding: 18px; font-size: 12.5px; line-height: 1.6; color: #3d3830;
+  }
+  .stack { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; padding: 4px 2px; font-size: 11px; letter-spacing: .18em; color: #4a4438; }
+  .stack b { font-weight: 700; }
+
+  /* main grid */
+  .main { display: grid; grid-template-columns: 380px 1fr; gap: 28px; margin-top: 26px; }
+  .eyebrow { font-size: 11px; letter-spacing: .22em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  .studio-text { font-size: 21px; line-height: 1.35; }
+  .studio-text .italic { font-size: 22px; }
+  .readmore { margin-top: 12px; font-size: 11px; letter-spacing: .2em; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 16px; }
+  .panel h2 { margin: 0 0 4px; font-size: 26px; font-weight: 600; }
+  .panel h2 .italic { font-weight: 400; }
+
+  label.sc {
+    display: grid; grid-template-columns: 18px 34px 1fr; gap: 10px; align-items: start;
+    padding: 11px 4px; border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  label.sc:hover { background: #ece5d4; }
+  label.sc .num { font-size: 11px; color: var(--muted); letter-spacing: .1em; padding-top: 2px; }
+  label.sc .ttl { font-size: 13px; line-height: 1.45; }
+  label.sc .ttl small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+  .badge { display: inline-block; font-size: 10px; letter-spacing: .14em; padding: 2px 8px; border-radius: 999px; background: #e2d9c4; text-transform: uppercase; }
+  .badge.red { background: var(--red-bg); color: var(--red-ink); }
+  .actions { display: flex; gap: 10px; margin-top: 14px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 9px 8px; border-bottom: 1px solid var(--line); }
+  tr.row { cursor: pointer; }
+  tr.row:hover, tr.row.sel { background: #ece4d1; }
+  .pass { color: var(--green); font-weight: 700; letter-spacing: .08em; font-size: 12px; }
+  .fail { color: var(--red); font-weight: 700; letter-spacing: .08em; font-size: 12px; }
+  .muted { color: var(--muted); font-size: 12px; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; }
+  .detail-grid h3 { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin: 12px 0 6px; }
+  pre {
+    white-space: pre-wrap; word-break: break-word; background: #131110; color: #e9e2d2;
+    padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.55; max-height: 320px; overflow: auto; margin: 0;
+  }
+
+  /* footer like reference */
+  .footer { text-align: center; margin: 44px 0 8px; }
+  .footer h2 { font-size: clamp(30px, 4vw, 48px); margin: 0; text-transform: uppercase; line-height: 1; }
+  .footer h2 .italic { text-transform: none; }
+  .footer nav { margin-top: 18px; display: flex; gap: 22px; justify-content: center; font-size: 12px; letter-spacing: .22em; }
+  @media (max-width: 900px) {
+    .hero, .main, .detail-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 0 16px 32px; }
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">AGENT&nbsp;TRACE</span>
+    <span class="health" id="health">…</span>
+    <span class="spacer"></span>
+    <button class="pill ghost" id="runSel2" type="button">RUN&nbsp;SELECTED</button>
+    <button class="pill" id="runAllTop" type="button">RUN&nbsp;SUITE&nbsp;↗</button>
+  </div>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-img">
+        <div class="hero-copy">
+          <h1 class="serif">THE&nbsp;HARNESS<br /><span class="italic serif">for</span> WHAT&rsquo;S&nbsp;NEXT</h1>
+          <div class="hero-tag">EVALUATION&nbsp;ATELIER&nbsp;—&nbsp;N°01</div>
+        </div>
+        <div class="hero-meta"><span class="chip">OFFLINE&nbsp;✓</span><span class="chip">RED&#8209;TEAM&nbsp;✓</span></div>
+      </div>
+      <div class="hero-side">
+        <div class="quote">“Run multi&#8209;turn loops between a simulated user and your tool&#8209;calling agent. Every message, tool call and state change is captured — then graded by deterministic checks <em>plus</em> an LLM judge.”</div>
+        <div class="stack"><span><b>FastMCP</b></span><span>OpenAI</span><span><b>Pydantic</b></span><span>Rich</span></div>
+        <div class="stack"><span>CRM</span><span><b>6&nbsp;SCENARIOS</b></span><span>DUAL&nbsp;GRADE</span><span>N°01</span></div>
+      </div>
+    </section>
+
+    <section class="main">
+      <div>
+        <div class="eyebrow">Our Suite</div>
+        <p class="studio-text serif">We test agents slowly, deliberately, and only on the things we can <span class="italic">prove.</span> Six scenarios. Happy paths <em class="serif">and</em> attacks.</p>
+        <div class="readmore">READ THE SCENARIOS —</div>
+        <div class="panel" style="margin-top:14px;">
+          <div id="scenarios">loading…</div>
+          <div class="actions">
+            <button class="pill" id="runSel" type="button">RUN&nbsp;SELECTED</button>
+            <button class="pill ghost" id="runAll" type="button">RUN&nbsp;ALL</button>
+          </div>
+          <p class="muted">Tip: red&#8209;team items attempt prompt injection. PASS means the agent refused the dangerous tool.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="eyebrow">Run&rsquo;s Journal</div>
+        <div class="panel">
+          <h2 class="serif">Score<span class="italic">card</span> <span class="muted" id="summary" style="font-size:12px; font-family:inherit;"></span></h2>
+          <table>
+            <thead><tr><th>scenario</th><th>result</th><th>det</th><th>judge</th><th>tools</th></tr></thead>
+            <tbody id="score"><tr><td colspan="5" class="muted">Nothing run yet — press RUN ALL.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+          <h2 class="serif">Traject<span class="italic">ory</span> <span class="muted" id="dtitle" style="font-size:12px; font-family:inherit;"></span></h2>
+          <div id="detail" class="muted">Run something, then click a row.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <h2 class="serif">MAKE <span class="italic serif">something</span><br />WORTH SHIPPING</h2>
+      <nav><span>RUN</span><span>ABOUT</span><span>JOURNAL</span></nav>
+    </footer>
+  </div>
+
+<script>
+let SC = [], LAST = [];
+async function api(p, o) {
+  const r = await fetch(p, Object.assign({headers: {'Content-Type': 'application/json'}}, o));
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+function esc(s){ return (s??'').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+async function init() {
+  try {
+    const h = await api('/api/health');
+    document.getElementById('health').textContent = h.llm_available ? 'OPENAI_API_KEY set' : 'offline heuristics';
+  } catch(e){ document.getElementById('health').textContent = 'api offline'; }
+  SC = await api('/api/scenarios');
+  const box = document.getElementById('scenarios');
+  box.innerHTML = SC.map((s, i) =>
+    `<label class="sc"><input type="checkbox" data-id="${s.id}" checked />
+     <span class="num">0${i + 1}</span>
+     <span class="ttl"><b>${esc(s.id)}</b> ${s.adversarial ? '<span class="badge red">red-team</span>' : '<span class="badge">happy path</span>'}<small>${esc(s.title)}</small></span></label>`).join('');
+}
+function selected() {
+  return [...document.querySelectorAll('#scenarios input:checked')].map(el => el.dataset.id);
+}
+async function run(ids) {
+  const btns = [...document.querySelectorAll('#runSel,#runAll,#runSel2,#runAllTop')];
+  btns.forEach(b => b.disabled = true);
+  document.getElementById('score').innerHTML = '<tr><td colspan="5">running…</td></tr>';
+  try {
+    const out = await api('/api/run', {method: 'POST', body: JSON.stringify({scenario_ids: ids})});
+    LAST = out.results;
+    const s = out.summary;
+    document.getElementById('summary').textContent =
+      `— ${s.passed}/${s.total} passed (${Math.round(s.pass_rate*100)}%) · red-team ${s.redteam_passed}/${s.redteam_total}`;
+    document.getElementById('score').innerHTML = LAST.map((r, i) => {
+      const ok = r.deterministic.filter(g => g.passed).length;
+      return `<tr class="row" data-i="${i}"><td><b>${esc(r.scenario_id)}</b><br/><span class="muted">${esc(r.title)}</span></td>
+        <td class="${r.passed ? 'pass' : 'fail'}">${r.passed ? 'PASS' : 'FAIL'}</td>
+        <td>${ok}/${r.deterministic.length}</td><td>${r.judge ? r.judge.score.toFixed(2) : '-'}</td>
+        <td>${r.tool_call_count}</td></tr>`;
+    }).join('');
+    document.querySelectorAll('tr.row').forEach(tr =>
+      tr.onclick = () => showDetail(+tr.dataset.i, tr));
+    if (LAST.length) showDetail(0, document.querySelector('tr.row'));
+  } catch(e) {
+    document.getElementById('score').innerHTML = `<tr><td colspan="5">error: ${esc(e.message)}</td></tr>`;
+  } finally { btns.forEach(b => b.disabled = false); }
+}
+function showDetail(i, tr) {
+  document.querySelectorAll('tr.row').forEach(el => el.classList.remove('sel'));
+  if (tr) tr.classList.add('sel');
+  const r = LAST[i];
+  document.getElementById('dtitle').textContent = '— ' + r.scenario_id;
+  const grades = r.deterministic.map(g =>
+    `<div>${g.passed ? '✓' : '✕'} <b>${esc(g.name)}</b> — ${esc(g.details)}</div>`).join('');
+  const tools = (r.trajectory ? r.trajectory.tool_calls : [])
+    .map(t => `<div>◼ <b>${esc(t.name)}</b> <span class="muted">${esc(JSON.stringify(t.arguments))}</span>${t.error ? ' → ✕ ' + esc(t.error) : ''}</div>`).join('') || '<span class="muted">no tool calls</span>';
+  const tx = r.trajectory ? r.trajectory.events.map(e =>
+    `[t${e.turn} ${e.speaker}] ${e.content}`).join('\n') : '(no trajectory)';
+  const judge = r.judge ? `<div>judge: <b>${r.judge.score.toFixed(2)}</b> ${r.judge.passed ? 'PASS' : 'FAIL'} · tone_ok=${r.judge.tone_ok} · injection_resisted=${r.judge.injection_resisted}<br/>${r.judge.reasons.map(esc).join('<br/>')}${r.judge.policy_violations.length ? '<br/>violations: ' + r.judge.policy_violations.map(esc).join('; ') : ''}</div>` : '';
+  document.getElementById('detail').innerHTML =
+    `<div class="detail-grid"><div><h3>Deterministic</h3>${grades}</div>
+     <div><h3>Judge</h3>${judge}<h3>Tool calls</h3>${tools}</div></div>
+     <h3>Transcript</h3><pre>${esc(tx)}</pre>
+     ${r.failure_trace ? `<h3>Failure trace</h3><pre>${esc(r.failure_trace)}</pre>` : ''}`;
+}
+document.getElementById('runSel').onclick = () => run(selected());
+document.getElementById('runAll').onclick = () => run(null);
+document.getElementById('runSel2').onclick = () => run(selected());
+document.getElementById('runAllTop').onclick = () => run(null);
+init();
+</script>
+</body>
+</html>
